@@ -1,7 +1,7 @@
 {
   "id": ".",
-  "name": "月4分割予算",
-  "short_name": "月4分割予算",
+  "name": "personal budget",
+  "short_name": "personal budget",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",

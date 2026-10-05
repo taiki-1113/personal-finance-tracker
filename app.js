@@ -2,7 +2,7 @@ const DB_NAME = 'monthly-budget-pwa';
 const DB_VERSION = 1;
 const DEFAULT_GROUPS = [{ id: 'credit', name: 'クレジット' }, { id: 'gasoline', name: 'ガソリン' }];
 const $ = id => document.getElementById(id);
-const state = { groups: [], budgets: [], expenses: [], groupId: 'credit', month: '', period: 1, settingsMonth: '', editId: null };
+const state = { groups: [], budgets: [], expenses: [], groupId: 'credit', month: '', period: 1, settingsMonth: '', settingsGroupId: 'credit', editId: null };
 
 function openDatabase() {
   return new Promise((resolve, reject) => {
@@ -104,9 +104,10 @@ function renderSettings() {
   $('group-settings-list').querySelectorAll('[data-remove-group]').forEach(button => { button.disabled = state.groups.length <= 1; button.title = button.disabled ? '予算枠は1つ以上必要です' : 'この予算枠と関連データを削除'; });
   $('group-add-form').querySelector('button').disabled = state.groups.length >= 4;
   $('group-name').disabled = state.groups.length >= 4;
-  $('settings-group').innerHTML = state.groups.map(group => `<option value="${escapeHtml(group.id)}">${escapeHtml(group.name)}</option>`).join('');
-  if (!state.groups.some(group => group.id === $('settings-group').value)) $('settings-group').value = state.groupId;
-  const selected = $('settings-group').value;
+  if (!state.groups.some(group => group.id === state.settingsGroupId)) state.settingsGroupId = state.groupId;
+  if (!state.groups.some(group => group.id === state.settingsGroupId)) state.settingsGroupId = state.groups[0]?.id;
+  $('settings-group').innerHTML = state.groups.map(group => `<option value="${escapeHtml(group.id)}" ${group.id === state.settingsGroupId ? 'selected' : ''}>${escapeHtml(group.name)}</option>`).join('');
+  const selected = state.settingsGroupId;
   $('budget-inputs').innerHTML = [1, 2, 3, 4].map(period => {
     const item = state.budgets.find(budget => budget.groupId === selected && budget.month === state.settingsMonth && budget.period === period);
     return `<label class="budget-input-row"><span>第${period}期間</span><input type="number" min="0" step="1" inputmode="numeric" data-budget-period="${period}" value="${item ? item.amount : ''}" placeholder="未設定"></label>`;
@@ -150,7 +151,7 @@ async function saveBudgets() {
   $('budget-error').textContent = '';
   const inputs = [...document.querySelectorAll('[data-budget-period]')];
   if (inputs.some(input => input.value !== '' && (!Number.isSafeInteger(Number(input.value)) || Number(input.value) < 0))) { $('budget-error').textContent = '予算は0円以上の整数で入力してください。'; return; }
-  const groupId = $('settings-group').value, month = state.settingsMonth;
+  const groupId = state.settingsGroupId, month = state.settingsMonth;
   for (const input of inputs) {
     const key = `${groupId}|${month}|${input.dataset.budgetPeriod}`;
     if (input.value === '') await deleteRecord('budgets', key);
@@ -186,12 +187,12 @@ function bindEvents() {
     if (remove && confirm('この支出を削除しますか？')) { await deleteRecord('expenses', remove.dataset.delete); await reload(); }
   });
   $('expense-form').addEventListener('submit', event => saveExpense(event).catch(showStorageError));
-  $('settings-open').addEventListener('click', () => { state.settingsMonth = state.month; renderSettings(); showDialog('settings-dialog'); });
-  $('budget-edit').addEventListener('click', () => { state.settingsMonth = state.month; renderSettings(); showDialog('settings-dialog'); });
+  $('settings-open').addEventListener('click', () => { state.settingsMonth = state.month; state.settingsGroupId = state.groupId; renderSettings(); showDialog('settings-dialog'); });
+  $('budget-edit').addEventListener('click', () => { state.settingsMonth = state.month; state.settingsGroupId = state.groupId; renderSettings(); showDialog('settings-dialog'); });
   document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => closeDialog(button.dataset.close)));
   $('settings-month-prev').addEventListener('click', () => { state.settingsMonth = moveMonth(state.settingsMonth, -1); renderSettings(); });
   $('settings-month-next').addEventListener('click', () => { state.settingsMonth = moveMonth(state.settingsMonth, 1); renderSettings(); });
-  $('settings-group').addEventListener('change', renderSettings);
+  $('settings-group').addEventListener('change', event => { state.settingsGroupId = event.target.value; renderSettings(); });
   $('budget-inputs').addEventListener('input', updateBudgetTotal);
   $('budget-save').addEventListener('click', () => saveBudgets().catch(showStorageError));
   $('group-add-form').addEventListener('submit', async event => {
