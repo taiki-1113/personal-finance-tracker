@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f6f2">
+  <meta name="description" content="月を4つの期間に分けて使える個人用予算管理アプリ">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>月4分割予算</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar"><div><p class="eyebrow">PERSONAL BUDGET</p><h1>月4分割予算</h1></div><button id="settings-open" class="icon-button" aria-label="設定">⚙</button></header>
+    <nav id="group-tabs" class="group-tabs" aria-label="予算枠"></nav>
+    <section class="month-row" aria-label="月切替"><button id="month-prev" class="arrow" aria-label="前月">‹</button><strong id="month-label"></strong><button id="month-next" class="arrow" aria-label="次月">›</button></section>
+    <section class="period-row"><button id="period-prev" class="text-button">← 前の期間</button><div><strong id="period-label"></strong><small id="period-dates"></small></div><button id="period-next" class="text-button">次の期間 →</button></section>
+    <section id="summary-card" class="summary-card">
+      <div class="summary-heading"><span>この期間の予算</span><button id="budget-edit" class="text-button">予算を設定</button></div>
+      <div id="budget-value" class="budget-value">—</div>
+      <div class="stats"><div><span>支出</span><strong id="spent-value"></strong></div><div><span id="remaining-title">残り</span><strong id="remaining-value"></strong></div></div>
+      <div class="progress-track"><div id="progress-bar"></div></div><div id="rate-label" class="rate-label"></div>
+      <p id="over-budget" class="over-budget" hidden></p>
+    </section>
+    <section class="expense-section"><div class="section-heading"><h2>支出</h2><button id="expense-add" class="primary-button">＋ 支出を追加</button></div><div id="expense-list" class="expense-list"></div></section>
+    <footer>データはこの端末に保存されます</footer>
+  </main>
+  <dialog id="expense-dialog" class="dialog"><form id="expense-form" method="dialog"><div class="dialog-head"><h2 id="expense-dialog-title">支出を追加</h2><button type="button" class="close-button" data-close="expense-dialog" aria-label="閉じる">×</button></div><label>金額（円）<input id="expense-amount" type="number" min="1" step="1" inputmode="numeric" required placeholder="例：3500"></label><label>日付<input id="expense-date" type="date" required></label><label>メモ<input id="expense-memo" type="text" maxlength="80" placeholder="例：スーパー"></label><p id="form-error" class="error" role="alert"></p><div class="dialog-actions"><button type="button" class="secondary-button" data-close="expense-dialog">キャンセル</button><button type="submit" class="primary-button">保存</button></div></form></dialog>
+  <dialog id="settings-dialog" class="dialog wide"><div class="dialog-head"><h2>設定</h2><button type="button" class="close-button" data-close="settings-dialog" aria-label="閉じる">×</button></div><section><h3>予算枠（最大4つ）</h3><p class="muted">支出の予算管理に使う枠です。支払方法の制限はありません。</p><div id="group-settings-list" class="group-settings-list"></div><form id="group-add-form" class="inline-form"><input id="group-name" type="text" maxlength="20" placeholder="新しい予算枠" aria-label="新しい予算枠名"><button class="primary-button" type="submit">追加</button></form><p id="group-error" class="error" role="alert"></p></section><hr><section><h3>この月の予算</h3><div class="settings-month"><button id="settings-month-prev" class="arrow" aria-label="前月">‹</button><strong id="settings-month-label"></strong><button id="settings-month-next" class="arrow" aria-label="次月">›</button></div><label class="settings-label">予算枠<select id="settings-group"></select></label><div id="budget-inputs" class="budget-inputs"></div><p id="budget-error" class="error" role="alert"></p><div class="dialog-actions"><button id="budget-save" class="primary-button">予算を保存</button></div></section></dialog>
+  <script src="app.js" defer></script>
+</body>
+</html>
